@@ -21,7 +21,7 @@
 #   }
 
 locals {
-  bucket_name = "${var.name}-${var.environment}-${data.aws_caller_identity.current.account_id}"
+  bucket_prefix = "${var.name}-${var.environment}-"
   # SSM parameter names follow Platform conventions
   ssm_prefix = "/${var.name}/${var.environment}"
 }
@@ -31,10 +31,10 @@ locals {
 # =============================================================================
 
 resource "aws_s3_bucket" "website" {
-  bucket = local.bucket_name
+  bucket_prefix = local.bucket_prefix
 
   tags = merge(var.tags, {
-    Name        = local.bucket_name
+    Name        = "${var.name}-${var.environment}"
     Environment = var.environment
     Purpose     = "static-website"
   })
@@ -82,8 +82,6 @@ resource "aws_cloudfront_origin_access_control" "website" {
 # =============================================================================
 # S3 Bucket Policy for CloudFront OAC
 # =============================================================================
-
-data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket_policy" "website" {
   bucket = aws_s3_bucket.website.id
@@ -161,14 +159,14 @@ resource "aws_cloudfront_distribution" "website" {
 
   origin {
     domain_name              = aws_s3_bucket.website.bucket_regional_domain_name
-    origin_id                = "S3-${local.bucket_name}"
+    origin_id                = "S3-${aws_s3_bucket.website.id}"
     origin_access_control_id = aws_cloudfront_origin_access_control.website.id
   }
 
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "S3-${local.bucket_name}"
+    target_origin_id = "S3-${aws_s3_bucket.website.id}"
 
     forwarded_values {
       query_string = false
