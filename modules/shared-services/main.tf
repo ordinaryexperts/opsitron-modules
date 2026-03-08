@@ -124,11 +124,12 @@ resource "aws_ecr_lifecycle_policy" "this" {
 
 resource "aws_s3_bucket" "artifacts" {
   count         = var.create_artifact_bucket ? 1 : 0
-  bucket        = var.artifact_bucket_name
+  bucket        = var.artifact_bucket_name != null ? var.artifact_bucket_name : null
+  bucket_prefix = var.artifact_bucket_name == null ? var.artifact_bucket_prefix : null
   force_destroy = var.artifact_force_destroy
 
   tags = merge(local.common_tags, {
-    Name    = var.artifact_bucket_name
+    Name    = var.artifact_bucket_name != null ? var.artifact_bucket_name : var.artifact_bucket_prefix
     Purpose = "build-artifacts"
   })
 }
