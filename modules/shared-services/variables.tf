@@ -102,7 +102,7 @@ variable "ecr_max_image_count" {
 # =============================================================================
 
 variable "artifact_bucket_name" {
-  description = "Name of the S3 bucket for artifacts (e.g., 123456789012-client-slug-artifacts)"
+  description = "Exact name of the S3 bucket for artifacts. If set, bucket_prefix is ignored. Use for existing buckets."
   type        = string
   default     = null
 
@@ -110,6 +110,12 @@ variable "artifact_bucket_name" {
     condition     = var.artifact_bucket_name == null || can(regex("^[a-z0-9][a-z0-9.-]*[a-z0-9]$", var.artifact_bucket_name))
     error_message = "Bucket name must be lowercase, start/end with letter or number, and contain only letters, numbers, hyphens, and periods."
   }
+}
+
+variable "artifact_bucket_prefix" {
+  description = "Prefix for auto-generated S3 bucket name. Used when artifact_bucket_name is null. AWS appends a random suffix for uniqueness."
+  type        = string
+  default     = "artifacts-"
 }
 
 variable "artifact_enable_versioning" {
