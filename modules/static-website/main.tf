@@ -21,7 +21,7 @@
 #   }
 
 locals {
-  bucket_name = "${var.name}-${var.environment}-website"
+  bucket_name = "${var.name}-${var.environment}-${data.aws_caller_identity.current.account_id}"
   # SSM parameter names follow Platform conventions
   ssm_prefix = "/${var.name}/${var.environment}"
 }
