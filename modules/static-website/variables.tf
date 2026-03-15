@@ -111,3 +111,9 @@ variable "force_destroy" {
   type        = bool
   default     = false
 }
+
+variable "bucket_name" {
+  description = "Explicit S3 bucket name. When set, uses this instead of generating a name with bucket_prefix. Use for existing buckets to avoid recreation."
+  type        = string
+  default     = null
+}

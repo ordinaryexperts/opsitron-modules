@@ -31,7 +31,8 @@ locals {
 # =============================================================================
 
 resource "aws_s3_bucket" "website" {
-  bucket_prefix = local.bucket_prefix
+  bucket        = var.bucket_name != null ? var.bucket_name : null
+  bucket_prefix = var.bucket_name != null ? null : local.bucket_prefix
   force_destroy = var.force_destroy
 
   tags = merge(var.tags, {
