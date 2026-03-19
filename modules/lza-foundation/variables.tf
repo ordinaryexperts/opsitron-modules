@@ -1,5 +1,12 @@
 # LZA Foundation Module - Variables
 
+# Prerequisites
+variable "github_token_secret_name" {
+  description = "Name of the Secrets Manager secret containing the GitHub PAT for LZA pipeline access"
+  type        = string
+  default     = "accelerator/github-token"
+}
+
 # Required Variables
 variable "management_account_email" {
   description = "Email address for the management account root user"

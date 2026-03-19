@@ -41,6 +41,14 @@ locals {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+# Prerequisite: GitHub token must exist in Secrets Manager before deploying LZA.
+# The LZA pipeline uses this token to access the LZA source code repository.
+# Create it manually: aws secretsmanager create-secret --name accelerator/github-token --secret-string <PAT>
+# See: https://docs.aws.amazon.com/solutions/latest/landing-zone-accelerator-on-aws/prerequisites.html
+data "aws_secretsmanager_secret" "github_token" {
+  name = var.github_token_secret_name
+}
+
 # Deploy the LZA Installer CloudFormation stack
 resource "aws_cloudformation_stack" "lza_installer" {
   name         = local.stack_name
