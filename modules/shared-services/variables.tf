@@ -104,9 +104,9 @@ variable "application_slugs" {
 }
 
 variable "ecr_max_images_per_app" {
-  description = "Maximum number of tagged images to keep per application (used with application_slugs)"
+  description = "Maximum number of tagged images to keep per application prefix (used with application_slugs). Set high enough that production images won't be expired by frequent dev pushes."
   type        = number
-  default     = 5
+  default     = 30
 }
 
 # =============================================================================
