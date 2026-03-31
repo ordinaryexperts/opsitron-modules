@@ -29,8 +29,12 @@ locals {
   # Computed environment variables from infrastructure resources
   infra_environment = merge(
     {
-      "AWS_DEFAULT_REGION" = data.aws_region.current.id
-      "AWS_ACCOUNT_ID"     = data.aws_caller_identity.current.account_id
+      "AWS_DEFAULT_REGION"        = data.aws_region.current.id
+      "AWS_ACCOUNT_ID"            = data.aws_caller_identity.current.account_id
+      "APP_HOST"                  = var.domain_name
+      "RAILS_ENV"                 = "production"
+      "RAILS_SERVE_STATIC_FILES"  = "1"
+      "RAILS_LOG_TO_STDOUT"       = "1"
     },
     var.enable_rds ? {
       "DATABASE_HOST"     = aws_rds_cluster.main[0].endpoint
@@ -52,7 +56,7 @@ locals {
   # Computed secrets from infrastructure resources
   infra_secrets = merge(
     {
-      "APP_SECRET" = aws_ssm_parameter.app_secret.arn
+      "SECRET_KEY_BASE" = aws_ssm_parameter.app_secret.arn
     },
     var.enable_rds ? {
       "DATABASE_PASSWORD" = aws_ssm_parameter.db_password[0].arn

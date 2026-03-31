@@ -107,12 +107,12 @@ resource "aws_ecs_task_definition" "app" {
         healthCheck = {
           command = [
             "CMD-SHELL",
-            "curl -f http://localhost:${var.container_port}${var.health_check_path} || exit 1"
+            "wget -qO- http://localhost:${var.container_port}${var.health_check_path} || curl -sf http://localhost:${var.container_port}${var.health_check_path} || exit 1"
           ]
           interval    = 30
           timeout     = 5
           retries     = 3
-          startPeriod = 60
+          startPeriod = 120
         }
       },
       var.container_command != null ? { command = var.container_command } : {}
