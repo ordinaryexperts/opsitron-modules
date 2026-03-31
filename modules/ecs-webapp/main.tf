@@ -11,6 +11,8 @@ data "aws_region" "current" {}
 
 locals {
   name_prefix = "${var.name}-${var.environment}"
+  # SSM parameter paths follow Platform conventions: /{application_slug}/{environment}
+  ssm_prefix = "/${coalesce(var.application, var.name)}/${var.environment}"
   app_url     = "https://${var.domain_name}"
 
   # Derive postgres major version from full version for parameter group family
@@ -71,7 +73,7 @@ resource "random_password" "app_secret" {
 }
 
 resource "aws_ssm_parameter" "app_secret" {
-  name        = "/${local.name_prefix}/app-secret"
+  name        = "${local.ssm_prefix}/app-secret"
   type        = "SecureString"
   value       = random_password.app_secret.result
   description = "Application secret for ${local.name_prefix}"

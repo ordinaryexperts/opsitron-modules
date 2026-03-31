@@ -41,7 +41,7 @@ resource "aws_iam_policy" "ecs_execution_custom" {
           "ssm:GetParametersByPath"
         ]
         Resource = [
-          "arn:aws:ssm:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:parameter/${local.name_prefix}/*"
+          "arn:aws:ssm:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}/*"
         ]
       },
       {
@@ -50,7 +50,7 @@ resource "aws_iam_policy" "ecs_execution_custom" {
           "secretsmanager:GetSecretValue"
         ]
         Resource = [
-          "arn:aws:secretsmanager:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:secret:/${local.name_prefix}/*"
+          "arn:aws:secretsmanager:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:secret:${local.ssm_prefix}/*"
         ]
       }
     ]
@@ -104,7 +104,7 @@ resource "aws_iam_policy" "ecs_task" {
             "ssm:GetParametersByPath"
           ]
           Resource = [
-            "arn:aws:ssm:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:parameter/${local.name_prefix}/*"
+            "arn:aws:ssm:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}/*"
           ]
         }
       ],

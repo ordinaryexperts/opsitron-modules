@@ -38,7 +38,7 @@ resource "aws_ecs_cluster_capacity_providers" "main" {
 # =============================================================================
 
 resource "aws_ssm_parameter" "container_image_tag" {
-  name        = "/${local.name_prefix}/container-image-tag"
+  name        = "${local.ssm_prefix}/container-image-tag"
   type        = "String"
   value       = var.initial_image_tag
   description = "Current container image tag for ${local.name_prefix}"
@@ -164,4 +164,26 @@ resource "aws_ecs_service" "app" {
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-app-service"
   })
+}
+
+# =============================================================================
+# SSM Parameters for Platform Deploy Workflow
+# =============================================================================
+
+resource "aws_ssm_parameter" "ecs_cluster_name" {
+  name        = "${local.ssm_prefix}/ecs-cluster-name"
+  type        = "String"
+  value       = aws_ecs_cluster.main.name
+  description = "ECS cluster name for ${local.name_prefix}"
+
+  tags = local.common_tags
+}
+
+resource "aws_ssm_parameter" "ecs_service_name" {
+  name        = "${local.ssm_prefix}/ecs-service-name"
+  type        = "String"
+  value       = aws_ecs_service.app.name
+  description = "ECS service name for ${local.name_prefix}"
+
+  tags = local.common_tags
 }

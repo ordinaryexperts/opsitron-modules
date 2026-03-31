@@ -3,7 +3,7 @@
 # =============================================================================
 
 variable "name" {
-  description = "Application name used for resource naming (max 20 chars to stay within AWS naming limits)"
+  description = "Resource name prefix (e.g., 'my-app-dev1'). Used for ECS cluster, service, ALB, and other AWS resource names. For SSM paths, set the 'application' variable separately."
   type        = string
 
   validation {
@@ -75,6 +75,12 @@ variable "vanity_acm_certificate_arn" {
 # =============================================================================
 # ECS Configuration
 # =============================================================================
+
+variable "application" {
+  description = "Application slug for SSM parameter paths (/{application}/{environment}/...). Used by the Platform deploy workflow to discover ECS config. Defaults to name if not set."
+  type        = string
+  default     = null
+}
 
 variable "environment" {
   description = "Environment name (e.g., dev1, stage1, prod1)"

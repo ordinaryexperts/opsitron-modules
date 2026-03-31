@@ -126,3 +126,22 @@ output "ses_domain_identity_arn" {
   description = "ARN of the SES domain identity"
   value       = var.enable_ses ? aws_ses_domain_identity.main[0].arn : null
 }
+
+# =============================================================================
+# SSM Parameter Outputs (for Platform deploy workflow discovery)
+# =============================================================================
+
+output "ssm_ecs_cluster_name_param" {
+  description = "SSM parameter name containing the ECS cluster name"
+  value       = aws_ssm_parameter.ecs_cluster_name.name
+}
+
+output "ssm_ecs_service_name_param" {
+  description = "SSM parameter name containing the ECS service name"
+  value       = aws_ssm_parameter.ecs_service_name.name
+}
+
+output "ssm_container_image_tag_param" {
+  description = "SSM parameter name containing the current container image tag"
+  value       = aws_ssm_parameter.container_image_tag.name
+}
