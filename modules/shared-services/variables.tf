@@ -31,80 +31,29 @@ variable "tags" {
 }
 
 # =============================================================================
-# ECR Repository
+# ECR Repositories (one per application)
 # =============================================================================
 
-variable "ecr_repository_name" {
-  description = "Name of the ECR repository (e.g., 123456789012-client-slug/app-name)"
+variable "ecr_repositories" {
+  description = "Map of application slug to ECR repository config. One repo is created per entry, named {namespace}/{slug}. Use get_shared_services_config MCP tool to get the current list."
+  type = map(object({
+    image_tag_mutability = optional(string, "IMMUTABLE")
+    scan_on_push         = optional(bool, true)
+    encryption_type      = optional(string, "AES256")
+    kms_key_arn          = optional(string, null)
+    max_image_count      = optional(number, 30)
+  }))
+  default = {}
+}
+
+variable "ecr_namespace" {
+  description = "Namespace prefix for ECR repository names (e.g., 'acme-corp'). Repos are named {namespace}/{slug}."
   type        = string
   default     = null
-
-  validation {
-    condition     = var.ecr_repository_name == null || can(regex("^[a-z0-9][a-z0-9/_-]*$", var.ecr_repository_name))
-    error_message = "Repository name must start with lowercase letter or number and contain only lowercase letters, numbers, hyphens, underscores, and forward slashes."
-  }
-}
-
-variable "ecr_image_tag_mutability" {
-  description = "Tag mutability setting. IMMUTABLE prevents overwriting tags."
-  type        = string
-  default     = "IMMUTABLE"
-
-  validation {
-    condition     = contains(["MUTABLE", "IMMUTABLE"], var.ecr_image_tag_mutability)
-    error_message = "Image tag mutability must be MUTABLE or IMMUTABLE."
-  }
-}
-
-variable "ecr_scan_on_push" {
-  description = "Enable vulnerability scanning when images are pushed"
-  type        = bool
-  default     = true
-}
-
-variable "ecr_encryption_type" {
-  description = "Encryption type for the repository (AES256 or KMS)"
-  type        = string
-  default     = "AES256"
-
-  validation {
-    condition     = contains(["AES256", "KMS"], var.ecr_encryption_type)
-    error_message = "Encryption type must be AES256 or KMS."
-  }
-}
-
-variable "ecr_kms_key_arn" {
-  description = "KMS key ARN for encryption (required if ecr_encryption_type is KMS)"
-  type        = string
-  default     = null
-}
-
-variable "ecr_enable_lifecycle_policy" {
-  description = "Enable lifecycle policy to clean up untagged images"
-  type        = bool
-  default     = true
 }
 
 variable "ecr_untagged_image_expiry_days" {
   description = "Days to keep untagged images before deletion"
-  type        = number
-  default     = 30
-}
-
-variable "ecr_max_image_count" {
-  description = "Maximum number of tagged images to keep (0 = unlimited). Ignored when application_slugs is set (per-app rules are used instead)."
-  type        = number
-  default     = 0
-}
-
-variable "application_slugs" {
-  description = "List of application slugs sharing this ECR repo. Images are tagged with {slug}-{sha}. Generates per-app lifecycle rules keeping the latest ecr_max_images_per_app images per prefix."
-  type        = list(string)
-  default     = []
-}
-
-variable "ecr_max_images_per_app" {
-  description = "Maximum number of tagged images to keep per application prefix (used with application_slugs). Set high enough that production images won't be expired by frequent dev pushes."
   type        = number
   default     = 30
 }

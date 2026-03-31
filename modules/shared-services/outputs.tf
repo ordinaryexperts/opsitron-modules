@@ -2,24 +2,16 @@
 # ECR Outputs
 # =============================================================================
 
-output "ecr_repository_name" {
-  description = "Name of the ECR repository"
-  value       = var.create_ecr_repository ? aws_ecr_repository.this[0].name : null
-}
-
-output "ecr_repository_arn" {
-  description = "ARN of the ECR repository"
-  value       = var.create_ecr_repository ? aws_ecr_repository.this[0].arn : null
-}
-
-output "ecr_repository_url" {
-  description = "URL of the ECR repository (for docker push/pull)"
-  value       = var.create_ecr_repository ? aws_ecr_repository.this[0].repository_url : null
-}
-
-output "ecr_registry_id" {
-  description = "Registry ID (AWS account ID) where repository is created"
-  value       = var.create_ecr_repository ? aws_ecr_repository.this[0].registry_id : null
+output "ecr_repositories" {
+  description = "Map of application slug to ECR repository details"
+  value = {
+    for slug, repo in aws_ecr_repository.app : slug => {
+      name         = repo.name
+      arn          = repo.arn
+      url          = repo.repository_url
+      registry_id  = repo.registry_id
+    }
+  }
 }
 
 # =============================================================================

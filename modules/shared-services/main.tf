@@ -26,32 +26,33 @@ locals {
 }
 
 # =============================================================================
-# ECR Repository
+# ECR Repositories (one per application)
 # =============================================================================
 
-resource "aws_ecr_repository" "this" {
-  count                = var.create_ecr_repository ? 1 : 0
-  name                 = var.ecr_repository_name
-  image_tag_mutability = var.ecr_image_tag_mutability
+resource "aws_ecr_repository" "app" {
+  for_each             = var.create_ecr_repository ? var.ecr_repositories : {}
+  name                 = var.ecr_namespace != null ? "${var.ecr_namespace}/${each.key}" : each.key
+  image_tag_mutability = each.value.image_tag_mutability
 
   image_scanning_configuration {
-    scan_on_push = var.ecr_scan_on_push
+    scan_on_push = each.value.scan_on_push
   }
 
   encryption_configuration {
-    encryption_type = var.ecr_encryption_type
-    kms_key         = var.ecr_encryption_type == "KMS" ? var.ecr_kms_key_arn : null
+    encryption_type = each.value.encryption_type
+    kms_key         = each.value.encryption_type == "KMS" ? each.value.kms_key_arn : null
   }
 
   tags = merge(local.common_tags, {
-    Name = var.ecr_repository_name
+    Name        = each.key
+    Application = each.key
   })
 }
 
-# Cross-account pull policy
+# Cross-account pull policy (per repo)
 resource "aws_ecr_repository_policy" "cross_account" {
-  count      = var.create_ecr_repository && var.organization_path != null ? 1 : 0
-  repository = aws_ecr_repository.this[0].name
+  for_each   = var.create_ecr_repository && var.organization_path != null ? var.ecr_repositories : {}
+  repository = aws_ecr_repository.app[each.key].name
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -77,48 +78,29 @@ resource "aws_ecr_repository_policy" "cross_account" {
   })
 }
 
-# Lifecycle policy
-resource "aws_ecr_lifecycle_policy" "this" {
-  count      = var.create_ecr_repository && var.ecr_enable_lifecycle_policy ? 1 : 0
-  repository = aws_ecr_repository.this[0].name
+# Lifecycle policy (per repo)
+resource "aws_ecr_lifecycle_policy" "app" {
+  for_each   = var.create_ecr_repository ? var.ecr_repositories : {}
+  repository = aws_ecr_repository.app[each.key].name
 
   policy = jsonencode({
     rules = concat(
-      # Per-app rules: keep latest N tagged images per app prefix
-      # Images are tagged as {app-slug}-{sha}, so prefix filtering works
-      [for i, slug in var.application_slugs : {
-        rulePriority = i + 1
-        description  = "Keep latest ${var.ecr_max_images_per_app} images for ${slug}"
-        selection = {
-          tagStatus     = "tagged"
-          tagPrefixList = ["${slug}-"]
-          countType     = "imageCountMoreThan"
-          countNumber   = var.ecr_max_images_per_app
-        }
-        action = {
-          type = "expire"
-        }
-      }],
-      # Global max image count (when no per-app rules)
-      length(var.application_slugs) == 0 && var.ecr_max_image_count > 0 ? [
+      each.value.max_image_count > 0 ? [
         {
           rulePriority = 1
-          description  = "Keep only ${var.ecr_max_image_count} most recent tagged images"
+          description  = "Keep latest ${each.value.max_image_count} tagged images"
           selection = {
-            tagStatus     = "tagged"
-            tagPrefixList = ["v", "sha-", "latest"]
-            countType     = "imageCountMoreThan"
-            countNumber   = var.ecr_max_image_count
+            tagStatus   = "tagged"
+            tagPrefixList = ["sha-", "v", "latest"]
+            countType   = "imageCountMoreThan"
+            countNumber = each.value.max_image_count
           }
-          action = {
-            type = "expire"
-          }
+          action = { type = "expire" }
         }
       ] : [],
-      # Cleanup untagged images (always last rule)
       [
         {
-          rulePriority = length(var.application_slugs) > 0 ? length(var.application_slugs) + 1 : (var.ecr_max_image_count > 0 ? 2 : 1)
+          rulePriority = each.value.max_image_count > 0 ? 2 : 1
           description  = "Remove untagged images after ${var.ecr_untagged_image_expiry_days} days"
           selection = {
             tagStatus   = "untagged"
@@ -126,9 +108,7 @@ resource "aws_ecr_lifecycle_policy" "this" {
             countUnit   = "days"
             countNumber = var.ecr_untagged_image_expiry_days
           }
-          action = {
-            type = "expire"
-          }
+          action = { type = "expire" }
         }
       ]
     )
