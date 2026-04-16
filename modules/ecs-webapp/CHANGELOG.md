@@ -2,6 +2,14 @@
 
 All notable changes to this module are documented in this file.
 
+## [2.3.0] - 2026-04-15
+
+### Added
+- `alb_zone_id` output — Route53 hosted zone ID of the ALB, needed by opsitron's domain alias provisioner to create alias DNS records. Without this, `entrypoint_zone_id` on the Environment was never populated after infra apply.
+
+### Fixed
+- HCL formatting alignment in locals and environment variable blocks
+
 ## [2.2.0] - 2026-03-31
 
 ### Fixed

@@ -27,6 +27,11 @@ output "alb_arn" {
   value       = aws_lb.main.arn
 }
 
+output "alb_zone_id" {
+  description = "Route53 hosted zone ID of the ALB (for alias DNS records)"
+  value       = aws_lb.main.zone_id
+}
+
 output "app_url" {
   description = "Application URL (HTTPS)"
   value       = local.app_url

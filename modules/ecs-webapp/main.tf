@@ -13,7 +13,7 @@ locals {
   name_prefix = "${var.name}-${var.environment}"
   # SSM parameter paths follow Platform conventions: /{application_slug}/{environment}
   ssm_prefix = "/${coalesce(var.application, var.name)}/${var.environment}"
-  app_url     = "https://${var.domain_name}"
+  app_url    = "https://${var.domain_name}"
 
   # Derive postgres major version from full version for parameter group family
   postgres_major_version = regex("^(\\d+)", var.postgres_version)[0]
@@ -29,12 +29,12 @@ locals {
   # Computed environment variables from infrastructure resources
   infra_environment = merge(
     {
-      "AWS_DEFAULT_REGION"        = data.aws_region.current.id
-      "AWS_ACCOUNT_ID"            = data.aws_caller_identity.current.account_id
-      "APP_HOST"                  = var.domain_name
-      "RAILS_ENV"                 = "production"
-      "RAILS_SERVE_STATIC_FILES"  = "1"
-      "RAILS_LOG_TO_STDOUT"       = "1"
+      "AWS_DEFAULT_REGION"       = data.aws_region.current.id
+      "AWS_ACCOUNT_ID"           = data.aws_caller_identity.current.account_id
+      "APP_HOST"                 = var.domain_name
+      "RAILS_ENV"                = "production"
+      "RAILS_SERVE_STATIC_FILES" = "1"
+      "RAILS_LOG_TO_STDOUT"      = "1"
     },
     var.enable_rds ? {
       "DATABASE_HOST"     = aws_rds_cluster.main[0].endpoint

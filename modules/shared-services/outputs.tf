@@ -6,10 +6,10 @@ output "ecr_repositories" {
   description = "Map of application slug to ECR repository details"
   value = {
     for slug, repo in aws_ecr_repository.app : slug => {
-      name         = repo.name
-      arn          = repo.arn
-      url          = repo.repository_url
-      registry_id  = repo.registry_id
+      name        = repo.name
+      arn         = repo.arn
+      url         = repo.repository_url
+      registry_id = repo.registry_id
     }
   }
 }
