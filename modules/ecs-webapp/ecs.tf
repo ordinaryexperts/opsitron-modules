@@ -156,6 +156,8 @@ resource "aws_ecs_service" "app" {
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
 
+  wait_for_steady_state = true
+
   depends_on = [
     aws_lb_listener.https,
     aws_iam_role_policy_attachment.ecs_execution_managed
