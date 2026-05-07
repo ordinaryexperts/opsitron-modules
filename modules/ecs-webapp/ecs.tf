@@ -158,6 +158,10 @@ resource "aws_ecs_service" "app" {
 
   wait_for_steady_state = true
 
+  timeouts {
+    update = "60m"
+  }
+
   depends_on = [
     aws_lb_listener.https,
     aws_iam_role_policy_attachment.ecs_execution_managed

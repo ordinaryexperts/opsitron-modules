@@ -2,6 +2,11 @@
 
 All notable changes to this module are documented in this file.
 
+## [2.4.1] - 2026-05-06
+
+### Changed
+- Set `timeouts.update = "60m"` on app and worker `aws_ecs_service` resources. Pairs with the `wait_for_steady_state` setting added in 2.4.0: the default 20-minute wait is too tight for services with longer ALB deregistration delays or slower container startup, causing terraform to mark applies failed when the rolling deploy would have succeeded a minute or two later. 60m is a sensible upper bound — past that the deployment circuit breaker has almost certainly already rolled back.
+
 ## [2.4.0] - 2026-05-05
 
 ### Changed

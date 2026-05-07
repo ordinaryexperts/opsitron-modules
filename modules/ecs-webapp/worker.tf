@@ -91,6 +91,10 @@ resource "aws_ecs_service" "worker" {
 
   wait_for_steady_state = true
 
+  timeouts {
+    update = "60m"
+  }
+
   depends_on = [
     aws_iam_role_policy_attachment.ecs_execution_managed
   ]
