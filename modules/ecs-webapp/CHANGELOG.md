@@ -2,6 +2,11 @@
 
 All notable changes to this module are documented in this file.
 
+## [2.5.0] - 2026-05-06
+
+### Added
+- `enable_bedrock` variable (default `false`). When `true`, attaches an IAM policy to the ECS task role granting `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream` on `anthropic.*` foundation models and the matching cross-region inference profiles in the current account. Use this when the application calls Bedrock with the task role rather than an Anthropic API key — removes the need to ship `RAILS_MASTER_KEY` or store an Anthropic key in SSM.
+
 ## [2.4.1] - 2026-05-06
 
 ### Changed

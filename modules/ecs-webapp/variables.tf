@@ -210,6 +210,12 @@ variable "enable_ses" {
   default     = false
 }
 
+variable "enable_bedrock" {
+  description = "Grant the ECS task role permission to invoke Anthropic Claude foundation models via AWS Bedrock (including cross-region inference profiles). Use this when the application calls Bedrock with the task role rather than an Anthropic API key."
+  type        = bool
+  default     = false
+}
+
 # =============================================================================
 # RDS Configuration (when enable_rds = true)
 # =============================================================================

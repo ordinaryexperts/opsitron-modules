@@ -165,3 +165,40 @@ resource "aws_iam_role_policy_attachment" "ecs_task" {
   role       = aws_iam_role.ecs_task.name
   policy_arn = aws_iam_policy.ecs_task.arn
 }
+
+# =============================================================================
+# Optional: Bedrock InvokeModel access for the task role
+# =============================================================================
+
+resource "aws_iam_policy" "ecs_task_bedrock" {
+  count = var.enable_bedrock ? 1 : 0
+
+  name        = "${local.name_prefix}-ecs-task-bedrock"
+  description = "Allow ${local.name_prefix} task to invoke Anthropic Claude foundation models via Bedrock"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:InvokeModel",
+          "bedrock:InvokeModelWithResponseStream"
+        ]
+        Resource = [
+          "arn:aws:bedrock:*::foundation-model/anthropic.*",
+          "arn:aws:bedrock:*:${data.aws_caller_identity.current.account_id}:inference-profile/*.anthropic.*"
+        ]
+      }
+    ]
+  })
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_bedrock" {
+  count = var.enable_bedrock ? 1 : 0
+
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = aws_iam_policy.ecs_task_bedrock[0].arn
+}
