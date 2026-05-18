@@ -3,6 +3,7 @@
   "description": "Shared infrastructure resources (ECR repositories, S3 artifact buckets) with cross-account access policies for container and S3 artifact deployments",
   "category": "storage",
   "deployment_type": null,
+  "stop_strategy": "always_on",
   "well_architected": ["security", "operational_excellence", "cost_optimization"],
   "features": ["ecr_repository", "artifact_bucket", "cross_account_access", "lifecycle_policy", "versioning"]
 }

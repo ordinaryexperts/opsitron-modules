@@ -3,6 +3,7 @@
   "description": "S3 + CloudFront static website with Origin Access Control for secure content delivery, custom domains, and SPA support",
   "category": "compute",
   "deployment_type": "s3_artifact",
+  "stop_strategy": "always_on",
   "well_architected": ["security", "performance_efficiency", "cost_optimization"],
   "features": ["cloudfront", "oac", "custom_domain", "https", "spa_support"]
 }

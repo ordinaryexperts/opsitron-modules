@@ -3,6 +3,7 @@
   "description": "AWS Landing Zone Accelerator foundation module for organizational governance, security baselines, and Platform integration",
   "category": "landing_zone",
   "deployment_type": null,
+  "stop_strategy": "not_applicable",
   "well_architected": ["security", "reliability", "operational_excellence"],
   "features": ["lza", "iam_roles", "ssm_parameters", "cloudformation"]
 }

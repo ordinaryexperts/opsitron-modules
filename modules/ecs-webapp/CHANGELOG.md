@@ -2,6 +2,11 @@
 
 All notable changes to this module are documented in this file.
 
+## [2.7.0] - 2026-05-17
+
+### Added
+- `enabled` variable (default `true`) for the Opsitron environment stop/start feature. When set to `false`, the app and worker ECS services drop to `desired_count = 0`, the autoscaling target is pinned to `min_capacity = max_capacity = 0`, and Aurora Serverless v2's `min_capacity` ACU is overridden to `0` so the cluster auto-pauses. All data resources (RDS cluster, snapshots, parameter groups, KMS keys, S3 buckets, SSM parameters, IAM roles) remain in state untouched, so toggling `enabled = true` brings the environment back online with original sizing on the next apply.
+
 ## [2.6.0] - 2026-05-17
 
 ### Added

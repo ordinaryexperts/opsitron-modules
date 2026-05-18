@@ -115,7 +115,7 @@ resource "aws_rds_cluster" "main" {
   enabled_cloudwatch_logs_exports = ["postgresql"]
 
   serverlessv2_scaling_configuration {
-    min_capacity = var.aurora_serverless_min_capacity
+    min_capacity = local.effective_aurora_min_capacity
     max_capacity = var.aurora_serverless_max_capacity
   }
 

@@ -3,6 +3,7 @@
   "description": "ECR repository in SharedServices with cross-account pull policy, vulnerability scanning, encryption, and image lifecycle cleanup",
   "category": "storage",
   "deployment_type": null,
+  "stop_strategy": "always_on",
   "well_architected": ["security", "cost_optimization", "operational_excellence"],
   "features": ["ecr", "cross_account_access", "vulnerability_scanning", "encryption", "lifecycle_policy"]
 }

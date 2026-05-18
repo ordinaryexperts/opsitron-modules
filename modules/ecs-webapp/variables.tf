@@ -149,6 +149,16 @@ variable "secrets" {
 }
 
 # =============================================================================
+# Power State
+# =============================================================================
+
+variable "enabled" {
+  description = "Set to false to scale all compute to zero and pause Aurora Serverless v2, while preserving all data (RDS cluster, snapshots, S3, ECR, secrets). Used by the Opsitron environment stop/start feature."
+  type        = bool
+  default     = true
+}
+
+# =============================================================================
 # Auto-Scaling
 # =============================================================================
 

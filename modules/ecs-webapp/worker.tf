@@ -71,7 +71,7 @@ resource "aws_ecs_service" "worker" {
   name                   = "${local.name_prefix}-worker"
   cluster                = aws_ecs_cluster.main.id
   task_definition        = aws_ecs_task_definition.worker[0].arn
-  desired_count          = var.worker_desired_count
+  desired_count          = local.effective_worker_desired_count
   launch_type            = "FARGATE"
   enable_execute_command = var.enable_execute_command
 

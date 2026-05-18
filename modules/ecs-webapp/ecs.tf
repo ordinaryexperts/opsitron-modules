@@ -132,7 +132,7 @@ resource "aws_ecs_service" "app" {
   name                   = "${local.name_prefix}-app"
   cluster                = aws_ecs_cluster.main.id
   task_definition        = aws_ecs_task_definition.app.arn
-  desired_count          = var.desired_count
+  desired_count          = local.effective_desired_count
   launch_type            = "FARGATE"
   enable_execute_command = var.enable_execute_command
 

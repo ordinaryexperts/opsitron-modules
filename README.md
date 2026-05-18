@@ -58,6 +58,7 @@ Each module has a `module.json` that defines metadata synced to Opsitron for the
 | `description` | Yes | One-line description of what the module does |
 | `category` | Yes | One of: `storage`, `networking`, `compute`, `security`, `database`, `observability`, `iam`, `landing_zone`, `application` |
 | `deployment_type` | No | `"container"` or `"s3_artifact"` if the module supports app code deployment |
+| `stop_strategy` | No | How the module participates in Opsitron's environment stop/start feature. One of `"scale_to_zero"` (module exposes an `enabled` variable that drops costed compute to zero), `"aws_native_stop"` (module uses an AWS native stop API, e.g. `StopDBCluster`), `"always_on"` (no meaningful stop savings — leave running), or `"not_applicable"` (module is foundational and must never be stopped). Defaults to `"not_applicable"` when omitted. |
 | `well_architected` | No | AWS Well-Architected pillars this module addresses |
 | `features` | No | List of features/capabilities for AI agent context |
 
@@ -134,11 +135,20 @@ All modules must include:
 
 - [ ] `README.md` with usage example
 - [ ] `CHANGELOG.md` with version history
-- [ ] `module.json` with metadata
+- [ ] `module.json` with metadata (including `stop_strategy`)
 - [ ] All variables have `description` and `type`
 - [ ] All outputs have `description`
 - [ ] `versions.tf` with provider constraints
 - [ ] Pass `tofu fmt` and `tofu validate`
+
+### Power state (`enabled` variable)
+
+Every compute-bearing module must accept a boolean `enabled` variable (default `true`) and declare `stop_strategy: "scale_to_zero"` in its `module.json`. When `enabled = false`, the module **must**:
+
+- Scale all costed compute to zero — ECS `desired_count`, ASG capacity, Lambda provisioned concurrency, Aurora Serverless ACU floor, etc.
+- Preserve all data resources — never destroy or stop RDS instances, EFS file systems, ElastiCache clusters, S3 buckets, ECR repositories, KMS keys, or secrets. They must remain declared in state so a toggle back to `enabled = true` restores the environment on the same apply.
+
+Modules that have no meaningful idle cost (e.g. CloudFront, S3-only buckets, ECR) declare `stop_strategy: "always_on"` and do not need an `enabled` variable. Foundational modules that must never be stopped (e.g. LZA) declare `stop_strategy: "not_applicable"`.
 
 ## License
 

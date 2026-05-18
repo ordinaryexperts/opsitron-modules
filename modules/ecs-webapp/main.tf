@@ -15,6 +15,14 @@ locals {
   ssm_prefix = "/${coalesce(var.application, var.name)}/${var.environment}"
   app_url    = "https://${var.domain_name}"
 
+  # When var.enabled is false, scale compute to zero and let Aurora Serverless v2 pause.
+  # Data resources (cluster, snapshots, S3, secrets) stay in state untouched.
+  effective_desired_count        = var.enabled ? var.desired_count : 0
+  effective_min_capacity         = var.enabled ? var.min_capacity : 0
+  effective_max_capacity         = var.enabled ? var.max_capacity : 0
+  effective_worker_desired_count = var.enabled ? var.worker_desired_count : 0
+  effective_aurora_min_capacity  = var.enabled ? var.aurora_serverless_min_capacity : 0
+
   # Derive postgres major version from full version for parameter group family
   postgres_major_version = regex("^(\\d+)", var.postgres_version)[0]
 

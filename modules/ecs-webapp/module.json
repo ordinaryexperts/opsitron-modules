@@ -3,6 +3,7 @@
   "description": "Containerized web application on ECS Fargate with ALB, auto-scaling, and optional Aurora PostgreSQL, Redis, S3, worker service, and SES",
   "category": "compute",
   "deployment_type": "container",
+  "stop_strategy": "scale_to_zero",
   "well_architected": ["reliability", "performance_efficiency", "operational_excellence", "security"],
   "features": ["fargate", "alb", "autoscaling", "rds", "redis", "s3", "worker", "ses", "ssm_parameters"]
 }
