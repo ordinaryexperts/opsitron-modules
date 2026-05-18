@@ -132,6 +132,11 @@ output "ses_domain_identity_arn" {
   value       = var.enable_ses ? aws_ses_domain_identity.main[0].arn : null
 }
 
+output "ses_configuration_set_name" {
+  description = "Name of the SES configuration set (attach to outgoing messages to enable reputation metrics, suppression, and event publishing)"
+  value       = var.enable_ses ? aws_ses_configuration_set.main[0].name : null
+}
+
 # =============================================================================
 # SSM Parameter Outputs (for Platform deploy workflow discovery)
 # =============================================================================

@@ -136,6 +136,8 @@ The module automatically injects infrastructure-related environment variables in
 | `DATABASE_USERNAME` | `enable_rds` | Aurora master username |
 | `REDIS_URL` | `enable_redis` | Full Redis connection URL |
 | `AWS_S3_BUCKET` | `enable_s3` | S3 bucket name |
+| `MAIL_FROM` | `enable_ses` | `no-reply@<domain_name>` — default `from:` for ActionMailer |
+| `AWS_SES_CONFIGURATION_SET` | `enable_ses` | SES configuration set name (for bounce/complaint tracking) |
 
 ## Secrets
 
@@ -230,3 +232,4 @@ The module creates an SSM parameter for the container image tag (`/{name}-{envir
 | `s3_bucket_arn` | S3 bucket ARN (if S3 enabled) |
 | `worker_service_name` | Worker service name (if worker enabled) |
 | `ses_domain_identity_arn` | SES identity ARN (if SES enabled) |
+| `ses_configuration_set_name` | SES configuration set name (if SES enabled) |

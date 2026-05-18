@@ -2,6 +2,12 @@
 
 All notable changes to this module are documented in this file.
 
+## [2.6.0] - 2026-05-17
+
+### Added
+- When `enable_ses = true`, the module now injects two environment variables into the app and worker tasks: `MAIL_FROM = "no-reply@${var.domain_name}"` (sensible default for ActionMailer's `default from:`; user `environment_variables` still takes precedence to override) and `AWS_SES_CONFIGURATION_SET` (name of the per-app SES configuration set, so apps can attach it to outgoing messages and pick up reputation metrics / event publishing without re-deriving the name).
+- New output `ses_configuration_set_name` exposing the configuration set name for callers that need it outside the container env.
+
 ## [2.5.0] - 2026-05-06
 
 ### Added

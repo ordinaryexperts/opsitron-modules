@@ -48,6 +48,10 @@ locals {
     var.enable_s3 ? {
       "AWS_S3_BUCKET" = aws_s3_bucket.app_storage[0].bucket
     } : {},
+    var.enable_ses ? {
+      "MAIL_FROM"                 = "no-reply@${var.domain_name}"
+      "AWS_SES_CONFIGURATION_SET" = aws_ses_configuration_set.main[0].name
+    } : {},
   )
 
   # User-provided env vars take precedence over computed infra vars
