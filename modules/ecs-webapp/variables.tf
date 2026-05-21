@@ -323,7 +323,13 @@ variable "worker_desired_count" {
 variable "log_retention_days" {
   description = "CloudWatch log retention in days"
   type        = number
-  default     = 30
+  default     = 365
+}
+
+variable "log_kms_key_arn" {
+  description = "ARN of a KMS key used to encrypt the module's CloudWatch log groups. Empty disables CMK encryption (no kms_key_id set). The key policy must grant the CloudWatch Logs service principal usage."
+  type        = string
+  default     = ""
 }
 
 variable "tags" {

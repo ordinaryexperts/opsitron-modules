@@ -2,6 +2,14 @@
 
 All notable changes to this module are documented in this file.
 
+## [2.8.0] - 2026-05-20
+
+### Added
+- `log_kms_key_arn` variable (default `""`). When set to a KMS key ARN, all four CloudWatch log groups created by this module (`ecs_cluster`, `app`, `rds`, `worker`) will have `kms_key_id` set to that ARN. When left empty (the default), no `kms_key_id` is set and log groups use the default AWS-managed encryption. The caller is responsible for granting the CloudWatch Logs service principal (`logs.<region>.amazonaws.com`) usage of the key in the key policy.
+
+### Changed
+- `log_retention_days` default changed from `30` to `365` to align with the LZA org-wide CloudWatch retention standard. **Callers that do not pin this variable will move to 365-day retention on the next apply.** Set `log_retention_days = 30` (or any other value) explicitly if you need to preserve the previous behavior.
+
 ## [2.7.0] - 2026-05-17
 
 ### Added

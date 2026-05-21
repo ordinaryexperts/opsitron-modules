@@ -5,6 +5,7 @@
 resource "aws_cloudwatch_log_group" "ecs_cluster" {
   name              = "/ecs/cluster/${local.name_prefix}"
   retention_in_days = var.log_retention_days
+  kms_key_id        = var.log_kms_key_arn != "" ? var.log_kms_key_arn : null
 
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-ecs-cluster-logs"
@@ -14,6 +15,7 @@ resource "aws_cloudwatch_log_group" "ecs_cluster" {
 resource "aws_cloudwatch_log_group" "app" {
   name              = "/ecs/app/${local.name_prefix}"
   retention_in_days = var.log_retention_days
+  kms_key_id        = var.log_kms_key_arn != "" ? var.log_kms_key_arn : null
 
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-app-logs"
@@ -25,6 +27,7 @@ resource "aws_cloudwatch_log_group" "rds" {
 
   name              = "/aws/rds/cluster/${local.name_prefix}-cluster/postgresql"
   retention_in_days = var.log_retention_days
+  kms_key_id        = var.log_kms_key_arn != "" ? var.log_kms_key_arn : null
 
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-rds-logs"

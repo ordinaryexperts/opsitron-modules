@@ -8,6 +8,7 @@ resource "aws_cloudwatch_log_group" "worker" {
 
   name              = "/ecs/worker/${local.name_prefix}"
   retention_in_days = var.log_retention_days
+  kms_key_id        = var.log_kms_key_arn != "" ? var.log_kms_key_arn : null
 
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-worker-logs"
