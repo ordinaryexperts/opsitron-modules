@@ -2,6 +2,10 @@
 
 All notable changes to this module are documented in this file.
 
+## [2.9.0] - 2026-05-22
+
+- DMARC support when `enable_ses = true`
+
 ## [2.8.0] - 2026-05-20
 
 ### Added

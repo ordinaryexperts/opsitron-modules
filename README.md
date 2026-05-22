@@ -139,6 +139,7 @@ All modules must include:
 - [ ] All variables have `description` and `type`
 - [ ] All outputs have `description`
 - [ ] `versions.tf` with provider constraints
+- [ ] `domain_name` is the full FQDN (no separate `subdomain` / `host` inputs — see "Service URL naming" below)
 - [ ] Pass `tofu fmt` and `tofu validate`
 
 ### Power state (`enabled` variable)
@@ -149,6 +150,37 @@ Every compute-bearing module must accept a boolean `enabled` variable (default `
 - Preserve all data resources — never destroy or stop RDS instances, EFS file systems, ElastiCache clusters, S3 buckets, ECR repositories, KMS keys, or secrets. They must remain declared in state so a toggle back to `enabled = true` restores the environment on the same apply.
 
 Modules that have no meaningful idle cost (e.g. CloudFront, S3-only buckets, ECR) declare `stop_strategy: "always_on"` and do not need an `enabled` variable. Foundational modules that must never be stopped (e.g. LZA) declare `stop_strategy: "not_applicable"`.
+
+### Service URL naming (`domain_name` variable)
+
+Modules that publish HTTPS endpoints (ALB, CloudFront, etc.) **must** accept a single `domain_name` variable whose value is the **full FQDN** of the service. Modules must **not** split the hostname into separate inputs (e.g. `subdomain` + `domain_name`, or `host` + `zone`) and concatenate them internally.
+
+Opsitron composes the FQDN once via the standard service-discovery convention:
+
+```
+{app-slug}-{env-name}-{region}.{stage-name}.{client-service-discovery-domain}
+```
+
+— for example `grow-food-together-dev1-us-east-1.growfoodtogetherdev.4kce.net` — and passes that single value through to the module as `var.domain_name`. The platform's UI, ACM cert provisioning, Route53 records, and deployment links all assume the FQDN it computed is the FQDN actually deployed. A module that builds its hostname internally drifts off this assumption — the live URL stops matching what the platform shows, and certs may not cover the actual hostname.
+
+For additional friendly URLs (e.g. `app.example.com` alongside the SD hostname), use the **vanity domain** feature on the Application. Opsitron will provision the additional ACM cert and attach it as an SNI cert on the existing ALB listener — no module-side changes needed.
+
+Concretely, modules should look like `ecs-webapp`:
+
+```hcl
+variable "domain_name" {
+  description = "Base domain name for HTTPS and DNS (full FQDN, e.g., grow-food-together-dev1-us-east-1.growfoodtogetherdev.4kce.net)"
+  type        = string
+}
+
+variable "vanity_acm_certificate_arn" {
+  description = "ACM cert ARN for the vanity domain. Attached as an additional SNI cert on the ALB listener."
+  type        = string
+  default     = ""
+}
+```
+
+The module should never embed naming conventions like `"${var.subdomain}.${var.domain_name}"` — let the platform own that composition.
 
 ## License
 

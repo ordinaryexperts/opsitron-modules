@@ -83,6 +83,19 @@ resource "aws_route53_record" "ses_mail_from_spf" {
   records = ["v=spf1 include:amazonses.com ~all"]
 }
 
+# DMARC
+# DKIM and SPF above already align with the From domain, so a p=none policy is
+# enough to produce a DMARC pass, which materially improves inbox placement.
+resource "aws_route53_record" "ses_dmarc" {
+  count = var.enable_ses ? 1 : 0
+
+  zone_id = var.route53_zone_id
+  name    = "_dmarc.${var.domain_name}"
+  type    = "TXT"
+  ttl     = 600
+  records = ["v=DMARC1; p=none;"]
+}
+
 # Configuration Set
 resource "aws_ses_configuration_set" "main" {
   count = var.enable_ses ? 1 : 0
