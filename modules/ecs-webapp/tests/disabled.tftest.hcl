@@ -26,6 +26,11 @@ mock_provider "aws" {
       arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/ptest-dev1-tg/1234567890abcdef"
     }
   }
+  mock_resource "aws_lb_listener" {
+    defaults = {
+      arn = "arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/ptest-dev1-alb/1234567890abcdef/abcdef1234567890"
+    }
+  }
   mock_resource "aws_iam_policy" {
     defaults = {
       arn = "arn:aws:iam::123456789012:policy/ptest-dev1-policy"
@@ -165,5 +170,34 @@ run "enabled_false_scales_compute_to_zero" {
   assert {
     condition     = length(aws_ssm_parameter.db_password) == 1
     error_message = "DB password SSM parameter must still be planned when enabled=false (data preservation)"
+  }
+
+  # Stopped-env intercept: ALB returns a friendly 503 instead of the bare default
+  assert {
+    condition     = length(aws_lb_listener_rule.stopped) == 1
+    error_message = "When enabled=false, the ALB stopped-intercept listener rule must be planned"
+  }
+
+  assert {
+    condition     = aws_lb_listener_rule.stopped[0].action[0].fixed_response[0].status_code == "503"
+    error_message = "Stopped-intercept rule must return HTTP 503 (service unavailable)"
+  }
+
+  assert {
+    condition     = aws_lb_listener_rule.stopped[0].priority == 1
+    error_message = "Stopped-intercept rule must be priority 1 so it preempts the default forward action"
+  }
+}
+
+run "enabled_true_omits_stopped_intercept_rule" {
+  command = plan
+
+  variables {
+    enabled = true
+  }
+
+  assert {
+    condition     = length(aws_lb_listener_rule.stopped) == 0
+    error_message = "When enabled=true, the stopped-intercept listener rule must NOT be planned"
   }
 }

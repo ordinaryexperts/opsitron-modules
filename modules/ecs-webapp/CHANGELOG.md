@@ -2,6 +2,11 @@
 
 All notable changes to this module are documented in this file.
 
+## [2.10.0] - 2026-05-25
+
+### Added
+- Friendly stopped-environment ALB intercept. When `enabled = false`, the module now adds an `aws_lb_listener_rule` at priority 1 that returns an HTTP 503 with a branded "This environment is paused" HTML page, intercepting traffic that would otherwise hit the bare ALB default 503 (no healthy targets). The rule is removed automatically on `enabled = true`. Override the body via `stopped_message_html` (max 1024 bytes — ALB fixed-response limit).
+
 ## [2.9.0] - 2026-05-22
 
 - DMARC support when `enable_ses = true`

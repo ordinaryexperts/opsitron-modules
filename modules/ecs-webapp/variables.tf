@@ -158,6 +158,19 @@ variable "enabled" {
   default     = true
 }
 
+variable "stopped_message_html" {
+  description = "HTML body returned by the ALB when `enabled = false`, intercepting all traffic before it reaches the (empty) target group. Capped at 1024 bytes by ALB. Override per-app for branding; the default is a generic 'environment paused' page."
+  type        = string
+  default     = <<-HTML
+    <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Environment Paused</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f9fafb;color:#374151}main{min-height:100%;display:flex;align-items:center;justify-content:center;padding:2rem;box-sizing:border-box}.card{max-width:32rem;text-align:center}h1{margin:0 0 1rem;color:#111827;font-size:1.5rem}p{margin:0;line-height:1.6}</style></head><body><main><div class="card"><h1>This environment is paused</h1><p>This deployment is currently stopped for cost savings. It will return when an administrator starts it.</p></div></main></body></html>
+  HTML
+
+  validation {
+    condition     = length(var.stopped_message_html) <= 1024
+    error_message = "stopped_message_html must be 1024 bytes or fewer (ALB fixed-response limit)."
+  }
+}
+
 # =============================================================================
 # Auto-Scaling
 # =============================================================================
