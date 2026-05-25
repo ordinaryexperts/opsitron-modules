@@ -187,6 +187,13 @@ run "enabled_false_scales_compute_to_zero" {
     condition     = aws_lb_listener_rule.stopped[0].priority == 1
     error_message = "Stopped-intercept rule must be priority 1 so it preempts the default forward action"
   }
+
+  # When stopped_message_html is unset (the default for this run), the local
+  # coalesce must fill in the canned default so AWS gets non-empty HTML.
+  assert {
+    condition     = length(aws_lb_listener_rule.stopped[0].action[0].fixed_response[0].message_body) > 0
+    error_message = "Stopped-intercept rule's message_body must be non-empty when stopped_message_html is unset (canned default should fill in)"
+  }
 }
 
 run "enabled_true_omits_stopped_intercept_rule" {
@@ -199,5 +206,40 @@ run "enabled_true_omits_stopped_intercept_rule" {
   assert {
     condition     = length(aws_lb_listener_rule.stopped) == 0
     error_message = "When enabled=true, the stopped-intercept listener rule must NOT be planned"
+  }
+}
+
+run "stopped_message_html_null_falls_back_to_default" {
+  command = plan
+
+  variables {
+    enabled              = false
+    stopped_message_html = null
+  }
+
+  # Wrappers (e.g., the 4kce/grow module) declare a passthrough variable with
+  # default = null and forward it through; null must NOT propagate to AWS.
+  assert {
+    condition     = length(aws_lb_listener_rule.stopped[0].action[0].fixed_response[0].message_body) > 0
+    error_message = "Explicit null stopped_message_html must coalesce to the canned default, not propagate as null"
+  }
+
+  assert {
+    condition     = aws_lb_listener_rule.stopped[0].action[0].fixed_response[0].message_body == local.stopped_message_html_default
+    error_message = "When stopped_message_html is null, the rule's message_body must equal local.stopped_message_html_default"
+  }
+}
+
+run "stopped_message_html_custom_is_used_verbatim" {
+  command = plan
+
+  variables {
+    enabled              = false
+    stopped_message_html = "<html><body><h1>Custom branded page</h1></body></html>"
+  }
+
+  assert {
+    condition     = aws_lb_listener_rule.stopped[0].action[0].fixed_response[0].message_body == "<html><body><h1>Custom branded page</h1></body></html>"
+    error_message = "Custom stopped_message_html must be passed through verbatim to the listener rule"
   }
 }

@@ -2,6 +2,11 @@
 
 All notable changes to this module are documented in this file.
 
+## [2.10.1] - 2026-05-25
+
+### Fixed
+- `stopped_message_html` is now nullable (`default = null`) so wrapper modules can declare an optional passthrough without forcing callers to provide HTML. Previously, a wrapper that forwarded an unset value (`stopped_message_html = var.stopped_message_html`) would propagate `null` into ecs-webapp — HCL treats an explicit `null` argument as overriding the variable's default, so the validation block ran `length(null)` and plan failed with "Invalid function argument". The canned default HTML now lives in `local.stopped_message_html_default` and is selected via `coalesce()` so AWS always receives a non-null `message_body`. The validation short-circuits on null and continues to enforce the 1024-byte cap on non-null values.
+
 ## [2.10.0] - 2026-05-25
 
 ### Added

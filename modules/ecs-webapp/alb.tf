@@ -98,7 +98,20 @@ resource "aws_lb_listener" "https" {
 # → the default rule returns the bare "503 Service Temporarily Unavailable".
 # This rule sits at priority 1 and intercepts all traffic with a friendly
 # branded 503 page while the env is stopped. Disappears (count = 0) on Start.
+#
+# var.stopped_message_html is nullable so wrapper modules can declare an
+# optional passthrough without forcing the caller to provide HTML. The local
+# below coalesces null to a canned default, so AWS always receives a non-null
+# message_body.
 # =============================================================================
+
+locals {
+  stopped_message_html_default = <<-HTML
+    <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Environment Paused</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f9fafb;color:#374151}main{min-height:100%;display:flex;align-items:center;justify-content:center;padding:2rem;box-sizing:border-box}.card{max-width:32rem;text-align:center}h1{margin:0 0 1rem;color:#111827;font-size:1.5rem}p{margin:0;line-height:1.6}</style></head><body><main><div class="card"><h1>This environment is paused</h1><p>This deployment is currently stopped for cost savings. It will return when an administrator starts it.</p></div></main></body></html>
+  HTML
+
+  stopped_message_html = coalesce(var.stopped_message_html, local.stopped_message_html_default)
+}
 
 resource "aws_lb_listener_rule" "stopped" {
   count        = var.enabled ? 0 : 1
@@ -110,7 +123,7 @@ resource "aws_lb_listener_rule" "stopped" {
     fixed_response {
       content_type = "text/html"
       status_code  = "503"
-      message_body = var.stopped_message_html
+      message_body = local.stopped_message_html
     }
   }
 
