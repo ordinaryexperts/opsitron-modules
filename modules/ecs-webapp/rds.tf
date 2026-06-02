@@ -142,6 +142,13 @@ resource "aws_rds_cluster_instance" "main" {
   engine_version          = aws_rds_cluster.main[0].engine_version
   db_parameter_group_name = aws_db_parameter_group.main[0].name
 
+  # Disable AWS-driven auto minor version upgrades. Aurora applies them on the
+  # instance, which silently bumps the cluster's minor version (e.g. 17.4 -> 17.7).
+  # Terraform then tries to "downgrade" back to the pinned engine_version on the
+  # next unrelated apply and AWS rejects it with InvalidParameterCombination.
+  # Minor version upgrades are now explicit, reviewed changes to var.postgres_version.
+  auto_minor_version_upgrade = false
+
   performance_insights_enabled = true
   monitoring_interval          = 60
   monitoring_role_arn          = aws_iam_role.rds_enhanced_monitoring[0].arn

@@ -263,7 +263,7 @@ variable "database_username" {
 variable "postgres_version" {
   description = "Aurora PostgreSQL engine version"
   type        = string
-  default     = "17.4"
+  default     = "17.7"
 }
 
 variable "aurora_serverless_min_capacity" {
