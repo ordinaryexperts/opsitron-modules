@@ -123,6 +123,24 @@ run "enabled_true_uses_configured_capacity" {
     condition     = aws_rds_cluster.main[0].serverlessv2_scaling_configuration[0].min_capacity == 0.5
     error_message = "When enabled=true, Aurora min ACU should match aurora_serverless_min_capacity default of 0.5"
   }
+
+  assert {
+    condition     = length(aws_ssm_parameter.ecs_worker_service_name) == 1
+    error_message = "When enable_worker=true, the worker service name must be published to SSM so the deploy pipeline can update the worker service"
+  }
+}
+
+run "worker_service_name_omitted_when_worker_disabled" {
+  command = plan
+
+  variables {
+    enable_worker = false
+  }
+
+  assert {
+    condition     = length(aws_ssm_parameter.ecs_worker_service_name) == 0
+    error_message = "When enable_worker=false, the worker service name SSM parameter must not be created"
+  }
 }
 
 run "enabled_false_scales_compute_to_zero" {

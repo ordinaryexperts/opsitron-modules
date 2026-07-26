@@ -151,6 +151,11 @@ output "ssm_ecs_service_name_param" {
   value       = aws_ssm_parameter.ecs_service_name.name
 }
 
+output "ssm_ecs_worker_service_name_param" {
+  description = "SSM parameter name containing the ECS worker service name (null when enable_worker = false)"
+  value       = one(aws_ssm_parameter.ecs_worker_service_name[*].name)
+}
+
 output "ssm_container_image_tag_param" {
   description = "SSM parameter name containing the current container image tag"
   value       = aws_ssm_parameter.container_image_tag.name

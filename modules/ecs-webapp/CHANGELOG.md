@@ -2,6 +2,11 @@
 
 All notable changes to this module are documented in this file.
 
+## [2.11.0] - 2026-07-25
+
+### Added
+- `ecs_worker_service_name` SSM parameter (`${ssm_prefix}/ecs-worker-service-name`), published only when `enable_worker = true`, plus a matching `ssm_ecs_worker_service_name_param` output. The generated container-deploy workflow reads this to roll the worker service onto the same image as the web service. Previously only the web service name was published (`ecs-service-name`), so deploys updated the web service while the worker stayed pinned to whatever image the last `terraform apply` baked in, drifting behind on every deploy. Existing environments must re-apply once to publish the new parameter; the deploy workflow treats its absence as "no worker" and skips cleanly.
+
 ## [2.10.1] - 2026-05-25
 
 ### Fixed

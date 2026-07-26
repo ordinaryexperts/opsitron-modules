@@ -231,5 +231,6 @@ The module creates an SSM parameter for the container image tag (`/{name}-{envir
 | `s3_bucket_name` | S3 bucket name (if S3 enabled) |
 | `s3_bucket_arn` | S3 bucket ARN (if S3 enabled) |
 | `worker_service_name` | Worker service name (if worker enabled) |
+| `ssm_ecs_worker_service_name_param` | SSM parameter for worker service name (null if worker disabled) |
 | `ses_domain_identity_arn` | SES identity ARN (if SES enabled) |
 | `ses_configuration_set_name` | SES configuration set name (if SES enabled) |

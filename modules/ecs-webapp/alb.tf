@@ -129,7 +129,7 @@ resource "aws_lb_listener_rule" "stopped" {
 
   condition {
     path_pattern {
-      values = [ "/*" ]
+      values = ["/*"]
     }
   }
 

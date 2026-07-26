@@ -193,3 +193,17 @@ resource "aws_ssm_parameter" "ecs_service_name" {
 
   tags = local.common_tags
 }
+
+# Published only when a worker service exists. The deploy pipeline reads this to
+# roll the worker onto the same image as the web service; without it the worker
+# stays pinned to whatever image the last terraform apply baked in.
+resource "aws_ssm_parameter" "ecs_worker_service_name" {
+  count = var.enable_worker ? 1 : 0
+
+  name        = "${local.ssm_prefix}/ecs-worker-service-name"
+  type        = "String"
+  value       = aws_ecs_service.worker[0].name
+  description = "ECS worker service name for ${local.name_prefix}"
+
+  tags = local.common_tags
+}
