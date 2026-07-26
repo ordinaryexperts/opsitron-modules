@@ -7,6 +7,12 @@ All notable changes to this module are documented in this file.
 ### Added
 - `ecs_worker_service_name` SSM parameter (`${ssm_prefix}/ecs-worker-service-name`), published only when `enable_worker = true`, plus a matching `ssm_ecs_worker_service_name_param` output. The generated container-deploy workflow reads this to roll the worker service onto the same image as the web service. Previously only the web service name was published (`ecs-service-name`), so deploys updated the web service while the worker stayed pinned to whatever image the last `terraform apply` baked in, drifting behind on every deploy. Existing environments must re-apply once to publish the new parameter; the deploy workflow treats its absence as "no worker" and skips cleanly.
 
+### Changed
+- `postgres_version` default bumped `17.4` → `17.7` to match the minor version AWS has already auto-applied to existing Aurora clusters.
+
+### Fixed
+- Disable AWS-driven Aurora minor-version auto-upgrades (`auto_minor_version_upgrade = false` on the cluster instance). AWS was auto-bumping the instance minor version (e.g. `17.4` → `17.7`); terraform then tried to "downgrade" `engine_version` back to the pinned value on the next unrelated apply and AWS rejected it (`InvalidParameterCombination`), blocking all applies until the drift was reconciled. Minor version upgrades are now explicit, reviewed changes to `var.postgres_version`.
+
 ## [2.10.1] - 2026-05-25
 
 ### Fixed
