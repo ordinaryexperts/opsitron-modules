@@ -3,7 +3,9 @@ name: Release Module
 on:
   push:
     tags:
-      - '*/v*'
+      # Path-based version tags: <module-name>-v<major>.<minor>.<patch>
+      # e.g. ecs-webapp-v2.12.0, static-website-v1.5.0
+      - '*-v*'
 
 jobs:
   release:
@@ -16,15 +18,73 @@ jobs:
       - name: Extract module info
         id: info
         run: |
+          set -euo pipefail
           TAG="${{ github.ref_name }}"
-          MODULE="${TAG%/v*}"
-          VERSION="${TAG#*/}"
-          echo "module=$MODULE" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          # Split on the last "-v" so module names containing hyphens
+          # (ecs-webapp, lza-foundation) survive intact.
+          MODULE="${TAG%-v*}"
+          VERSION="${TAG##*-v}"
+
+          if [ "$MODULE" = "$TAG" ] || [ -z "$VERSION" ]; then
+            echo "::error::Tag '$TAG' does not match <module-name>-v<version>"
+            exit 1
+          fi
+          if [ ! -d "modules/$MODULE" ]; then
+            echo "::error::Tag '$TAG' names module '$MODULE', but modules/$MODULE does not exist"
+            exit 1
+          fi
+
+          echo "module=$MODULE" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Module: $MODULE, Version: $VERSION"
+
+      - name: Build release notes
+        run: |
+          set -euo pipefail
+          MODULE="${{ steps.info.outputs.module }}"
+          VERSION="${{ steps.info.outputs.version }}"
+          TAG="${{ github.ref_name }}"
+          CHANGELOG="modules/$MODULE/CHANGELOG.md"
+
+          if [ ! -f "$CHANGELOG" ]; then
+            echo "::error::$CHANGELOG not found"
+            exit 1
+          fi
+
+          # Auto-generated notes diff against the previous *release*, which in a
+          # multi-module repo is usually an unrelated module. Use this version's
+          # own changelog section instead.
+          BODY="$(awk -v ver="$VERSION" '
+            $0 ~ "^## \\[" ver "\\]" { found = 1; next }
+            found && /^## \[/          { exit }
+            found                      { print }
+          ' "$CHANGELOG" | sed -e '/./,$!d')"
+
+          if [ -z "$BODY" ]; then
+            echo "::error::No '## [$VERSION]' section found in $CHANGELOG"
+            exit 1
+          fi
+
+          {
+            printf '%s\n\n' "$BODY"
+            printf '## Usage\n\n'
+            printf '```hcl\n'
+            printf 'module "%s" {\n' "$MODULE"
+            printf '  source = "github.com/${{ github.repository }}//modules/%s?ref=%s"\n' "$MODULE" "$TAG"
+            printf '}\n'
+            printf '```\n\n'
+            printf '[Full changelog](https://github.com/${{ github.repository }}/blob/%s/modules/%s/CHANGELOG.md)\n' "$TAG" "$MODULE"
+          } > release-notes.md
+
+          echo "--- release notes ---"
+          cat release-notes.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "${{ steps.info.outputs.module }} ${{ steps.info.outputs.version }}"
-          generate_release_notes: true
+          name: "${{ steps.info.outputs.module }} v${{ steps.info.outputs.version }}"
+          body_path: release-notes.md
+          draft: false
+          # Each module versions independently, so no single tag is "latest"
+          # for the repository as a whole.
+          make_latest: 'false'
