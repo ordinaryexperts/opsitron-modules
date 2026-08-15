@@ -56,7 +56,8 @@ resource "aws_ecs_task_definition" "worker" {
           }
         }
       },
-      var.worker_command != null ? { command = var.worker_command } : {}
+      var.worker_command != null ? { command = var.worker_command } : {},
+      var.worker_stop_timeout != null ? { stopTimeout = var.worker_stop_timeout } : {}
     )
   ])
 

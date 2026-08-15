@@ -328,6 +328,17 @@ variable "worker_desired_count" {
   default     = 1
 }
 
+variable "worker_stop_timeout" {
+  description = "Seconds ECS waits after SIGTERM before sending SIGKILL to the worker container. Raise this to give job runners time to drain in-flight work on deploy or scale-in. Leave null to use the ECS default of 30 seconds. Valid range for Fargate is 2-120."
+  type        = number
+  default     = null
+
+  validation {
+    condition     = var.worker_stop_timeout == null || try(var.worker_stop_timeout >= 2 && var.worker_stop_timeout <= 120, false)
+    error_message = "worker_stop_timeout must be between 2 and 120 seconds (the Fargate maximum), or null to use the ECS default of 30."
+  }
+}
+
 # =============================================================================
 # Other
 # =============================================================================

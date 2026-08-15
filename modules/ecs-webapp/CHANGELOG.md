@@ -2,6 +2,11 @@
 
 All notable changes to this module are documented in this file.
 
+## [2.12.0] - 2026-08-15
+
+### Added
+- `worker_stop_timeout` variable (default `null`). Sets `stopTimeout` on the worker container definition, controlling how long ECS waits after SIGTERM before SIGKILL. Job runners like Solid Queue drain in-flight work in that window; at the ECS default of 30 seconds a longer-running job is killed mid-flight and recorded as a process-exit failure that `retry_on` cannot catch, because the error is raised by the supervisor rather than inside the job. Valid range is 2-120 (the Fargate maximum); leaving it `null` omits the field entirely, so existing task definitions are unchanged and keep the 30-second ECS default.
+
 ## [2.11.0] - 2026-07-25
 
 ### Added

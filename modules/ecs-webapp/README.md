@@ -98,6 +98,7 @@ module "webapp" {
   worker_task_cpu      = 512
   worker_task_memory   = 1024
   worker_desired_count = 2
+  worker_stop_timeout  = 120
 
   # SES
   enable_ses = true
@@ -121,6 +122,18 @@ module "webapp" {
   }
 }
 ```
+
+## Worker Shutdown
+
+On deploy or scale-in ECS sends SIGTERM to the worker container, waits `worker_stop_timeout` seconds, then sends SIGKILL. Job runners such as Solid Queue use that window to finish in-flight jobs and release the rest back to the ready queue; a job still running at SIGKILL is not requeued and is recorded as a process-exit failure that application-level retries cannot catch.
+
+The variable is unset by default, which leaves the ECS default of 30 seconds. Set it to at least the duration of your longest job — `120` is the Fargate maximum:
+
+```hcl
+worker_stop_timeout = 120
+```
+
+The cost is deploy time: each worker task can take up to `worker_stop_timeout` seconds longer to stop. The web service is unaffected.
 
 ## Environment Variables
 
@@ -202,6 +215,7 @@ The module creates an SSM parameter for the container image tag (`/{name}-{envir
 | `worker_task_cpu` | Worker CPU units | `number` | `256` | no |
 | `worker_task_memory` | Worker memory (MiB) | `number` | `512` | no |
 | `worker_desired_count` | Worker task count | `number` | `1` | no |
+| `worker_stop_timeout` | Seconds between SIGTERM and SIGKILL for the worker container (2-120; `null` = ECS default of 30) | `number` | `null` | no |
 | `log_retention_days` | Log retention days | `number` | `30` | no |
 | `tags` | Resource tags | `map(string)` | `{}` | no |
 | `ssl_policy` | ALB SSL policy | `string` | `"ELBSecurityPolicy-TLS13-1-2-2021-06"` | no |
