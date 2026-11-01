@@ -25,6 +25,7 @@ Designed for use with client accounts that already have VPCs provisioned (e.g., 
 | `enable_s3` | `false` | S3 bucket with encryption and CORS |
 | `enable_worker` | `false` | Background worker service (same image, different command) |
 | `enable_ses` | `false` | SES domain identity with DKIM and SPF |
+| `enable_ses_event_publishing` | `false` | SNS topic receiving SES bounce, complaint and delivery events |
 
 ## Usage
 
@@ -101,7 +102,9 @@ module "webapp" {
   worker_stop_timeout  = 120
 
   # SES
-  enable_ses = true
+  enable_ses                  = true
+  enable_ses_event_publishing = true
+  ses_event_webhook_path      = "/webhooks/ses"
 
   # Custom env vars (merged with computed infra vars)
   environment_variables = {
@@ -135,6 +138,18 @@ worker_stop_timeout = 120
 
 The cost is deploy time: each worker task can take up to `worker_stop_timeout` seconds longer to stop. The web service is unaffected.
 
+## SES Event Publishing
+
+With `enable_ses = true` the module creates the configuration set, but by default that set publishes its bounce, complaint and delivery events nowhere. Setting `enable_ses_event_publishing = true` adds an SNS topic, a topic policy scoped to this account's configuration set, and the configuration-set event destination, and injects `AWS_SES_SNS_TOPIC_ARN` into the app and worker containers.
+
+Set `ses_event_webhook_path` to have the module also subscribe `https://<domain_name><path>` to the topic. Leave it `null` to create the topic only and wire subscriptions yourself from the `ses_events_topic_arn` output.
+
+Notes:
+
+- `DELIVERY` is in the default `ses_event_types` deliberately. Bounce and complaint rates are fractions of *delivered* mail — that is the denominator mailbox providers and the SES reputation dashboard use — so dropping `DELIVERY` leaves those rates uncomputable, not merely approximate.
+- The consumer endpoint is expected to fail closed: reject anything whose `TopicArn` does not match `AWS_SES_SNS_TOPIC_ARN`. An SNS signature alone is not authentication — every AWS account signs with the same regional certificates, so signature-only verification would let any AWS customer subscribe your endpoint to a topic of their own and publish fabricated complaints.
+- Because the endpoint fails closed, it cannot confirm the subscription until tasks are running with `AWS_SES_SNS_TOPIC_ARN` set. The subscription therefore `depends_on` the app ECS service (which waits for steady state), so the first apply confirms rather than timing out. This also means the first apply that turns on event publishing needs `enabled = true`; a paused environment has no running task to confirm the subscription.
+
 ## Environment Variables
 
 The module automatically injects infrastructure-related environment variables into the container. User-provided `environment_variables` are merged with (and take precedence over) these computed values:
@@ -151,6 +166,7 @@ The module automatically injects infrastructure-related environment variables in
 | `AWS_S3_BUCKET` | `enable_s3` | S3 bucket name |
 | `MAIL_FROM` | `enable_ses` | `no-reply@<domain_name>` — default `from:` for ActionMailer |
 | `AWS_SES_CONFIGURATION_SET` | `enable_ses` | SES configuration set name (for bounce/complaint tracking) |
+| `AWS_SES_SNS_TOPIC_ARN` | `enable_ses_event_publishing` | ARN of the SES events SNS topic — the webhook consumer compares incoming `TopicArn` against this |
 
 ## Secrets
 
@@ -202,6 +218,9 @@ The module creates an SSM parameter for the container image tag (`/{name}-{envir
 | `enable_s3` | Create S3 bucket | `bool` | `false` | no |
 | `enable_worker` | Create worker service | `bool` | `false` | no |
 | `enable_ses` | Create SES identity | `bool` | `false` | no |
+| `enable_ses_event_publishing` | Publish SES events to SNS | `bool` | `false` | no |
+| `ses_event_types` | SES event types to publish | `list(string)` | `["BOUNCE", "COMPLAINT", "DELIVERY"]` | no |
+| `ses_event_webhook_path` | Path on `domain_name` to subscribe to the events topic | `string` | `null` | no |
 | `database_subnet_ids` | DB subnet IDs | `list(string)` | `[]` | when RDS enabled |
 | `database_name` | Database name | `string` | `"app"` | no |
 | `database_username` | DB master username | `string` | `"app"` | no |
@@ -248,3 +267,4 @@ The module creates an SSM parameter for the container image tag (`/{name}-{envir
 | `ssm_ecs_worker_service_name_param` | SSM parameter for worker service name (null if worker disabled) |
 | `ses_domain_identity_arn` | SES identity ARN (if SES enabled) |
 | `ses_configuration_set_name` | SES configuration set name (if SES enabled) |
+| `ses_events_topic_arn` | SES events SNS topic ARN (null unless event publishing enabled) |

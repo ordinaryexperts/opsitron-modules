@@ -5,5 +5,5 @@
   "deployment_type": "container",
   "stop_strategy": "scale_to_zero",
   "well_architected": ["reliability", "performance_efficiency", "operational_excellence", "security"],
-  "features": ["fargate", "alb", "autoscaling", "rds", "redis", "s3", "worker", "ses", "ssm_parameters"]
+  "features": ["fargate", "alb", "autoscaling", "rds", "redis", "s3", "worker", "ses", "ses_events", "ssm_parameters"]
 }

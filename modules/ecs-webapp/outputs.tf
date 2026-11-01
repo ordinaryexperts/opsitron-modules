@@ -137,6 +137,11 @@ output "ses_configuration_set_name" {
   value       = var.enable_ses ? aws_ses_configuration_set.main[0].name : null
 }
 
+output "ses_events_topic_arn" {
+  description = "ARN of the SNS topic receiving SES events (null unless enable_ses_event_publishing = true). Subscribe to this to consume bounce, complaint and delivery notifications outside the module."
+  value       = one(aws_sns_topic.ses_events[*].arn)
+}
+
 # =============================================================================
 # SSM Parameter Outputs (for Platform deploy workflow discovery)
 # =============================================================================

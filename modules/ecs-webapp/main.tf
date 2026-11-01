@@ -60,6 +60,12 @@ locals {
       "MAIL_FROM"                 = "no-reply@${var.domain_name}"
       "AWS_SES_CONFIGURATION_SET" = aws_ses_configuration_set.main[0].name
     } : {},
+    # Only set when the topic exists. The consumer webhook compares the
+    # incoming TopicArn against this value and fails closed, so an empty or
+    # stale value would look exactly like a broken endpoint.
+    local.ses_events_enabled ? {
+      "AWS_SES_SNS_TOPIC_ARN" = aws_sns_topic.ses_events[0].arn
+    } : {},
   )
 
   # User-provided env vars take precedence over computed infra vars

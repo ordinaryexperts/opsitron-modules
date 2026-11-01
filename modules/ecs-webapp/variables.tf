@@ -232,6 +232,12 @@ variable "enable_ses" {
   default     = false
 }
 
+variable "enable_ses_event_publishing" {
+  description = "Publish SES bounce, complaint and delivery events from the configuration set to an SNS topic. Requires enable_ses = true; without it the configuration set emits events nowhere and the application cannot observe its own bounce and complaint rates."
+  type        = bool
+  default     = false
+}
+
 variable "enable_bedrock" {
   description = "Grant the ECS task role permission to invoke Anthropic Claude foundation models via AWS Bedrock (including cross-region inference profiles). Use this when the application calls Bedrock with the task role rather than an Anthropic API key."
   type        = bool
@@ -336,6 +342,45 @@ variable "worker_stop_timeout" {
   validation {
     condition     = var.worker_stop_timeout == null || try(var.worker_stop_timeout >= 2 && var.worker_stop_timeout <= 120, false)
     error_message = "worker_stop_timeout must be between 2 and 120 seconds (the Fargate maximum), or null to use the ECS default of 30."
+  }
+}
+
+# =============================================================================
+# SES Configuration (when enable_ses = true)
+# =============================================================================
+
+variable "ses_event_types" {
+  description = "SES event types published to the events SNS topic when enable_ses_event_publishing = true. DELIVERY is included by default because bounce and complaint rates are only meaningful as a fraction of delivered mail - drop it and those rates cannot be computed at all."
+  type        = list(string)
+  default     = ["BOUNCE", "COMPLAINT", "DELIVERY"]
+
+  validation {
+    condition = length(var.ses_event_types) > 0 && alltrue([
+      for event_type in var.ses_event_types : contains([
+        "SEND",
+        "REJECT",
+        "BOUNCE",
+        "COMPLAINT",
+        "DELIVERY",
+        "OPEN",
+        "CLICK",
+        "RENDERING_FAILURE",
+        "DELIVERY_DELAY",
+        "SUBSCRIPTION",
+      ], event_type)
+    ])
+    error_message = "ses_event_types must be a non-empty list drawn from SEND, REJECT, BOUNCE, COMPLAINT, DELIVERY, OPEN, CLICK, RENDERING_FAILURE, DELIVERY_DELAY, SUBSCRIPTION."
+  }
+}
+
+variable "ses_event_webhook_path" {
+  description = "Path on the application's own domain that receives SES events, e.g. \"/webhooks/ses\". When set, the module subscribes https://<domain_name><path> to the events SNS topic. Leave null to create the topic only and wire subscriptions elsewhere via the ses_events_topic_arn output."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.ses_event_webhook_path == null || can(regex("^/", var.ses_event_webhook_path))
+    error_message = "ses_event_webhook_path must start with a forward slash, e.g. \"/webhooks/ses\"."
   }
 }
 
