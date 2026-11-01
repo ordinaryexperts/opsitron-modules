@@ -37,7 +37,7 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: 1.6.0
+          tofu_version: 1.10.6
 
       - name: Format Check
         run: tofu fmt -check -recursive modules/${{ matrix.module }}
@@ -58,7 +58,7 @@ jobs:
       - name: Setup OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: 1.6.0
+          tofu_version: 1.10.6
 
       - name: Format Check All
         run: tofu fmt -check -recursive modules/
