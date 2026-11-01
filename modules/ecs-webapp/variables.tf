@@ -272,6 +272,12 @@ variable "postgres_version" {
   default     = "17.7"
 }
 
+variable "database_tags" {
+  description = "Additional tags applied only to the Aurora cluster and its instances (e.g. backup or data-classification tags). Merged over the module's common tags; the module's Name and Engine tags always take precedence."
+  type        = map(string)
+  default     = {}
+}
+
 variable "aurora_serverless_min_capacity" {
   description = "Minimum ACU capacity for Aurora Serverless v2"
   type        = number

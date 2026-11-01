@@ -224,7 +224,8 @@ The module creates an SSM parameter for the container image tag (`/{name}-{envir
 | `database_subnet_ids` | DB subnet IDs | `list(string)` | `[]` | when RDS enabled |
 | `database_name` | Database name | `string` | `"app"` | no |
 | `database_username` | DB master username | `string` | `"app"` | no |
-| `postgres_version` | Aurora PostgreSQL version | `string` | `"17.4"` | no |
+| `postgres_version` | Aurora PostgreSQL version | `string` | `"17.7"` | no |
+| `database_tags` | Extra tags for the Aurora cluster and instances only | `map(string)` | `{}` | no |
 | `aurora_serverless_min_capacity` | Min ACU | `number` | `0.5` | no |
 | `aurora_serverless_max_capacity` | Max ACU | `number` | `4` | no |
 | `instance_count` | Aurora instance count | `number` | `1` | no |
@@ -259,6 +260,7 @@ The module creates an SSM parameter for the container image tag (`/{name}-{envir
 | `database_endpoint` | Aurora endpoint (if RDS enabled) |
 | `database_name` | Database name (if RDS enabled) |
 | `database_password_parameter_arn` | DB password SSM ARN (if RDS enabled) |
+| `rds_cluster_arn` | Aurora cluster ARN (if RDS enabled) |
 | `redis_endpoint` | Redis endpoint (if Redis enabled) |
 | `redis_url` | Redis URL (if Redis enabled) |
 | `s3_bucket_name` | S3 bucket name (if S3 enabled) |

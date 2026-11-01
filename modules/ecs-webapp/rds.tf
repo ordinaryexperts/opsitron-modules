@@ -119,7 +119,7 @@ resource "aws_rds_cluster" "main" {
     max_capacity = var.aurora_serverless_max_capacity
   }
 
-  tags = merge(local.common_tags, {
+  tags = merge(local.common_tags, var.database_tags, {
     Name   = "${local.name_prefix}-cluster"
     Engine = "Aurora Serverless v2"
   })
@@ -155,7 +155,7 @@ resource "aws_rds_cluster_instance" "main" {
 
   promotion_tier = count.index
 
-  tags = merge(local.common_tags, {
+  tags = merge(local.common_tags, var.database_tags, {
     Name   = "${local.name_prefix}-db-${count.index}"
     Engine = "Aurora Serverless v2"
   })

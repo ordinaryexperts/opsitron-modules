@@ -76,6 +76,11 @@ output "database_endpoint" {
   value       = var.enable_rds ? aws_rds_cluster.main[0].endpoint : null
 }
 
+output "rds_cluster_arn" {
+  description = "ARN of the Aurora cluster (null if RDS disabled)"
+  value       = var.enable_rds ? aws_rds_cluster.main[0].arn : null
+}
+
 output "database_name" {
   description = "Database name"
   value       = var.enable_rds ? aws_rds_cluster.main[0].database_name : null
