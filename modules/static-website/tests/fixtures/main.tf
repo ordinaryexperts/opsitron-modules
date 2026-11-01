@@ -1,13 +1,4 @@
 # modules/static-website/tests/fixtures/main.tf
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.0"
-    }
-  }
-}
-
 data "aws_ssm_parameter" "certificate_arn" {
   name = "/platform-test/static-website/certificate-arn"
 }

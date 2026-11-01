@@ -1,13 +1,4 @@
 # modules/lza-foundation/tests/fixtures/main.tf
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.0"
-    }
-  }
-}
-
 data "aws_ssm_parameter" "github_oidc_provider_arn" {
   name = "/platform-test/lza-foundation/github-oidc-provider-arn"
 }

@@ -2,15 +2,6 @@
 #
 # Helper module to read test fixtures from SSM
 
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.0"
-    }
-  }
-}
-
 data "aws_ssm_parameter" "organization_path" {
   name = "/platform-test/organization-path"
 }
